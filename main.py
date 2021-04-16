@@ -8,6 +8,19 @@ def show_image(img):
     plt.imshow(image, 'gray')
 
 
+# The sigmoid function
+def sigmoid(z):
+    return 1.0/(1.0+np.exp(-z))
+
+
+# A function for feedforward calculation
+def feedforward(x, w, a, b):
+    a[0] = sigmoid(np.add(np.matmul(w[0], x), b[0]))
+    for i in range(1, 3):
+        a[i] = sigmoid(np.add(np.matmul(w[i], a[i - 1]), b[i]))
+    return a
+
+
 # Reading The Train Set
 train_images_file = open('train-images.idx3-ubyte', 'rb')
 train_images_file.seek(4)
@@ -54,3 +67,36 @@ for n in range(num_of_test_images):
 # Plotting an image
 show_image(train_set[0][0])
 plt.show()
+# Print label of image
+print(train_set[0][1])
+
+# Initialize weights with standard normal distribution
+w = [np.random.standard_normal(size=(16, 784)), np.random.standard_normal(size=(16, 16)),
+     np.random.standard_normal(size=(10, 16))]
+
+# Initialize bias with zero matrix
+b = [np.zeros((16, 1)), np.zeros((16, 1)), np.zeros((10, 1))]
+
+# Initialize activations with zero matrix
+a = [np.zeros((16, 1)), np.zeros((16, 1)), np.zeros((10, 1))]
+
+
+hit = 0
+for i in range(100):
+    a = feedforward(train_set[i][0], w, a, b)
+    result = np.argmax(a[2])
+    label = np.argmax(train_set[i][1])
+    print(result, label)
+    if result == label:
+        hit += 1
+
+print("Accuracy = ", hit/100)
+
+
+
+
+
+
+
+
+
