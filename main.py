@@ -64,11 +64,11 @@ for n in range(num_of_test_images):
 
     test_set.append((image, label))
 
-# Plotting an image
-show_image(train_set[0][0])
-plt.show()
-# Print label of image
-print(train_set[0][1])
+# # Plotting an image
+# show_image(train_set[0][0])
+# plt.show()
+# # Print label of image
+# print(np.argmax(train_set[0][1]))
 
 # Initialize weights with standard normal distribution
 w = [np.random.standard_normal(size=(16, 784)), np.random.standard_normal(size=(16, 16)),
@@ -86,7 +86,7 @@ for i in range(100):
     a = feedforward(train_set[i][0], w, a, b)
     result = np.argmax(a[2])
     label = np.argmax(train_set[i][1])
-    print(result, label)
+    # print(result, label)
     if result == label:
         hit += 1
 
