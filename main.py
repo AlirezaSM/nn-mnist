@@ -84,17 +84,14 @@ print("[STATUS] Test set loaded!")
 # Initialize weights with standard normal distribution
 w = [np.random.standard_normal(size=(16, 784)), np.random.standard_normal(size=(16, 16)),
      np.random.standard_normal(size=(10, 16))]
-
 # Initialize bias with zero matrix
 b = [np.zeros((16, 1)), np.zeros((16, 1)), np.zeros((10, 1))]
-
 # Initialize activations with zero matrix
 a = [np.zeros((16, 1)), np.zeros((16, 1)), np.zeros((10, 1))]
-
 # Initialize z with zero matrix
 z = [np.zeros((16, 1)), np.zeros((16, 1)), np.zeros((10, 1))]
-
 print("[STATUS] w, b, a, z matrix initialized!")
+
 # Set learning_rate, number_of_epochs and batch_size
 learning_rate = 0.2
 number_of_epochs = 20
@@ -136,43 +133,25 @@ for i in range(number_of_epochs):
                 for p in range(10):
                     grad_a1[q][0] += w[2][p][q] * sigmoid_deriv(z[2][p]) * (2 * a[2][p] - 2 * short_train_set[(j * batch_size) + k][1][p])
 
-
-
             # Calculate gradient vector of weight and bias for second layer
-            # print(z[1][1])
-            # second_layer_activ_deriv = [[0]*16]*16
             for q in range(16):
                 for r in range(16):
-
-                    # for l in range(10):
-                    #     second_layer_activ_deriv[q][r] += w[2][l][q] * sigmoid_deriv(z[2][l]) * (2 * a[2][l] - 2 * short_train_set[(j * batch_size) + k][1][l])
-
                     grad_w[1][q][r] += a[0][r] * sigmoid_deriv(z[1][q]) * grad_a1[q]
                     grad_b[1][q] += sigmoid_deriv(z[1][q]) * grad_a1[q]
             # print(f"[STATUS] second layer gradient finished for sample {k} in batch {j}")
-            # print(z[1][1])
 
             grad_a0 = np.zeros((16, 1))
             for q in range(16):
                 for p in range(16):
                     grad_a0[q][0] += w[1][p][q] * sigmoid_deriv(z[1][p]) * grad_a1[p]
 
-
             # Calculate gradient vector of weight and bias for first layer
             for p in range(16):
                 for o in range(784):
-                    # first_layer_activ_deriv = 0
-                    # for m in range(16):
-                    #     second_layer_activ_deriv = 0
-                    #     for q in range(10):
-                    #         second_layer_activ_deriv += w[2][q][m] * sigmoid_deriv(z[2][q]) * (
-                    #                     2 * a[2][q] - 2 * short_train_set[(j * batch_size) + k][1][q])
-                    #
-                    #     first_layer_activ_deriv += w[1][m][p] * sigmoid_deriv(z[1][m]) * second_layer_activ_deriv
-
                     grad_w[0][p][o] += short_train_set[(j * batch_size) + k][0][o] * sigmoid_deriv(z[0][p]) * grad_a0[p]
                     grad_b[0][p] += 1 * sigmoid_deriv(z[0][p]) * grad_a0[p]
 
+        # Update weights and biases
         w[0] -= learning_rate * (grad_w[0] / batch_size)
         w[1] -= learning_rate * (grad_w[1] / batch_size)
         w[2] -= learning_rate * (grad_w[2] / batch_size)
@@ -180,11 +159,14 @@ for i in range(number_of_epochs):
         b[1] -= learning_rate * (grad_b[1] / batch_size)
         b[2] -= learning_rate * (grad_b[2] / batch_size)
     print(f"[STATUS] Epoch {i} completed.")
+
+# Plotting cost value over epochs
 cost = np.divide(cost, 100)
 plt.plot(np.arange(20), cost, color ="red")
 plt.show()
 print("[STATUS] Learning finished!")
 
+# Testing the network
 hit = 0
 for i in range(100):
     a, z = feedforward(train_set[i][0], w, a, b, z)
