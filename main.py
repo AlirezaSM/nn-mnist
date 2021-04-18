@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 import math
+import time
 
 
 # A function to plot images
@@ -80,7 +81,8 @@ print("[STATUS] Test set loaded!")
 # plt.show()
 # # Print label of image
 # print(np.argmax(train_set[0][1]))
-
+print("[STATUS] Learning started!")
+start = time.time()
 # Initialize weights with standard normal distribution
 w = [np.random.standard_normal(size=(16, 784)), np.random.standard_normal(size=(16, 16)),
      np.random.standard_normal(size=(10, 16))]
@@ -94,7 +96,7 @@ print("[STATUS] w, b, a, z matrix initialized!")
 
 # Set learning_rate, number_of_epochs and batch_size
 learning_rate = 0.2
-number_of_epochs = 20
+number_of_epochs = 200
 batch_size = 10
 
 # Create a short train_set
@@ -121,35 +123,53 @@ for i in range(number_of_epochs):
             a, z = feedforward(short_train_set[(j * batch_size) + k][0], w, a, b, z)
             cost[i] += np.sum(np.power(np.subtract(a[2], short_train_set[(j * batch_size) + k][1]), 2))
 
-            # Calculate gradient vector of weight and bias for last layer
-            for p in range(10):
-                for q in range(16):
-                    grad_w[2][p][q] += a[1][q] * sigmoid_deriv(z[2][p]) * (2 * a[2][p] - 2 * short_train_set[(j * batch_size) + k][1][p])
-                    grad_b[2][p] += sigmoid_deriv(z[2][p]) * (2 * a[2][p] - 2 * short_train_set[(j * batch_size) + k][1][p])
-            # print(f"[STATUS] Last layer gradient finished for sample {k} in batch {j}")
+            # # Calculate gradient vector of weight and bias for last layer
+            # for p in range(10):
+            #     for q in range(16):
+            #         grad_w[2][p][q] += a[1][q] * sigmoid_deriv(z[2][p]) * (2 * a[2][p] - 2 * short_train_set[(j * batch_size) + k][1][p])
+            #         grad_b[2][p] += sigmoid_deriv(z[2][p]) * (2 * a[2][p] - 2 * short_train_set[(j * batch_size) + k][1][p])
+            # # print(f"[STATUS] Last layer gradient finished for sample {k} in batch {j}")
+
+            # Vectorized
+            grad_w[2] += (2 * sigmoid_deriv(z[2]) * (a[2] - short_train_set[(j * batch_size) + k][1])) @ (np.transpose(a[1]))
+            grad_b[2] += (2 * sigmoid_deriv(z[2]) * (a[2] - short_train_set[(j * batch_size) + k][1]))
 
             grad_a1 = np.zeros((16,1))
-            for q in range(16):
-                for p in range(10):
-                    grad_a1[q][0] += w[2][p][q] * sigmoid_deriv(z[2][p]) * (2 * a[2][p] - 2 * short_train_set[(j * batch_size) + k][1][p])
+            # for q in range(16):
+            #     for p in range(10):
+            #         grad_a1[q][0] += w[2][p][q] * sigmoid_deriv(z[2][p]) * (2 * a[2][p] - 2 * short_train_set[(j * batch_size) + k][1][p])
 
-            # Calculate gradient vector of weight and bias for second layer
-            for q in range(16):
-                for r in range(16):
-                    grad_w[1][q][r] += a[0][r] * sigmoid_deriv(z[1][q]) * grad_a1[q]
-                    grad_b[1][q] += sigmoid_deriv(z[1][q]) * grad_a1[q]
-            # print(f"[STATUS] second layer gradient finished for sample {k} in batch {j}")
+            # Vectorized
+            grad_a1 = np.transpose(w[2]) @ (2 * sigmoid_deriv(z[2]) * (a[2] - short_train_set[(j * batch_size) + k][1]))
+
+            # # Calculate gradient vector of weight and bias for second layer
+            # for q in range(16):
+            #     for r in range(16):
+            #         grad_w[1][q][r] += a[0][r] * sigmoid_deriv(z[1][q]) * grad_a1[q]
+            #         grad_b[1][q] += sigmoid_deriv(z[1][q]) * grad_a1[q]
+            # # print(f"[STATUS] second layer gradient finished for sample {k} in batch {j}")
+
+            # Vectorized
+            grad_w[1] += (sigmoid_deriv(z[1]) * grad_a1) @ (np.transpose(a[0]))
+            grad_b[1] += (sigmoid_deriv(z[1]) * grad_a1)
 
             grad_a0 = np.zeros((16, 1))
-            for q in range(16):
-                for p in range(16):
-                    grad_a0[q][0] += w[1][p][q] * sigmoid_deriv(z[1][p]) * grad_a1[p]
+            # for q in range(16):
+            #     for p in range(16):
+            #         grad_a0[q][0] += w[1][p][q] * sigmoid_deriv(z[1][p]) * grad_a1[p]
 
-            # Calculate gradient vector of weight and bias for first layer
-            for p in range(16):
-                for o in range(784):
-                    grad_w[0][p][o] += short_train_set[(j * batch_size) + k][0][o] * sigmoid_deriv(z[0][p]) * grad_a0[p]
-                    grad_b[0][p] += 1 * sigmoid_deriv(z[0][p]) * grad_a0[p]
+            # Vectorized
+            grad_a0 = np.transpose(w[1]) @ (sigmoid_deriv(z[1]) * grad_a1)
+
+            # # Calculate gradient vector of weight and bias for first layer
+            # for p in range(16):
+            #     for o in range(784):
+            #         grad_w[0][p][o] += short_train_set[(j * batch_size) + k][0][o] * sigmoid_deriv(z[0][p]) * grad_a0[p]
+            #         grad_b[0][p] += 1 * sigmoid_deriv(z[0][p]) * grad_a0[p]
+
+            # Vectorized
+            grad_w[0] += (sigmoid_deriv(z[0]) * grad_a0) @ (np.transpose(short_train_set[(j * batch_size) + k][0]))
+            grad_b[0] += (sigmoid_deriv(z[0]) * grad_a0)
 
         # Update weights and biases
         w[0] -= learning_rate * (grad_w[0] / batch_size)
@@ -158,13 +178,14 @@ for i in range(number_of_epochs):
         b[0] -= learning_rate * (grad_b[0] / batch_size)
         b[1] -= learning_rate * (grad_b[1] / batch_size)
         b[2] -= learning_rate * (grad_b[2] / batch_size)
-    print(f"[STATUS] Epoch {i} completed.")
+    # print(f"[STATUS] Epoch {i} completed.")
 
 # Plotting cost value over epochs
 cost = np.divide(cost, 100)
-plt.plot(np.arange(20), cost, color ="red")
+plt.plot(np.arange(number_of_epochs), cost, color ="red")
 plt.show()
 print("[STATUS] Learning finished!")
+stop = time.time()
 
 # Testing the network
 hit = 0
@@ -177,6 +198,7 @@ for i in range(100):
         hit += 1
 
 print("Accuracy = ", hit/100)
+print(f"Learn time = {math.floor(stop - start)} seconds")
 
 
 
