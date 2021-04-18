@@ -95,12 +95,12 @@ z = [np.zeros((16, 1)), np.zeros((16, 1)), np.zeros((10, 1))]
 print("[STATUS] w, b, a, z matrix initialized!")
 
 # Set learning_rate, number_of_epochs and batch_size
-learning_rate = 0.2
-number_of_epochs = 200
-batch_size = 10
+learning_rate = 1
+number_of_epochs = 5
+batch_size = 50
 
 # Create a short train_set
-short_train_set = train_set[:100]
+short_train_set = train_set
 
 cost = np.zeros((number_of_epochs, 1))
 # For i from 0 to number_of_epochs
@@ -178,18 +178,18 @@ for i in range(number_of_epochs):
         b[0] -= learning_rate * (grad_b[0] / batch_size)
         b[1] -= learning_rate * (grad_b[1] / batch_size)
         b[2] -= learning_rate * (grad_b[2] / batch_size)
-    # print(f"[STATUS] Epoch {i} completed.")
+    print(f"[STATUS] Epoch {i} completed.")
 
 # Plotting cost value over epochs
-cost = np.divide(cost, 100)
+cost = np.divide(cost, len(short_train_set))
 plt.plot(np.arange(number_of_epochs), cost, color ="red")
 plt.show()
 print("[STATUS] Learning finished!")
 stop = time.time()
 
-# Testing the network
+# Testing the network with train set
 hit = 0
-for i in range(100):
+for i in range(len(short_train_set)):
     a, z = feedforward(train_set[i][0], w, a, b, z)
     result = np.argmax(a[2])
     label = np.argmax(train_set[i][1])
@@ -197,7 +197,20 @@ for i in range(100):
     if result == label:
         hit += 1
 
-print("Accuracy = ", hit/100)
+print("Train accuracy = ", hit/len(short_train_set))
+
+# Testing the network with test set
+hit = 0
+for i in range(len(test_set)):
+    a, z = feedforward(test_set[i][0], w, a, b, z)
+    result = np.argmax(a[2])
+    label = np.argmax(test_set[i][1])
+    # print(result, label)
+    if result == label:
+        hit += 1
+
+print("Test accuracy = ", hit/len(test_set))
+
 print(f"Learn time = {math.floor(stop - start)} seconds")
 
 
