@@ -96,7 +96,7 @@ z = [np.zeros((16, 1)), np.zeros((16, 1)), np.zeros((10, 1))]
 
 print("[STATUS] w, b, a, z matrix initialized!")
 # Set learning_rate, number_of_epochs and batch_size
-learning_rate = 1
+learning_rate = 0.2
 number_of_epochs = 20
 batch_size = 10
 
@@ -183,7 +183,6 @@ for i in range(number_of_epochs):
 cost = np.divide(cost, 100)
 plt.plot(np.arange(20), cost, color ="red")
 plt.show()
-print("COST: ", cost)
 print("[STATUS] Learning finished!")
 
 hit = 0
